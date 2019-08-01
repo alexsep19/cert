@@ -1,22 +1,18 @@
 package com.shu;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.util.Base64;
 
 public class Signatures {
 
-    public void CriptoSign(String message, String privateKeyFile, String publicKeyFile, String signFile) throws Exception {
-        Keys keys = new Keys();
-        Keys.saveObjectToFile(privateKeyFile, keys.getPrivateKey());
-        Keys.saveObjectToFile(publicKeyFile , keys.getPublicKey());
+    static public void CriptoSign(String message, String privateKeyFile, String publicKeyFile, String signFile) throws Exception {
+        Keys keys = new Keys(privateKeyFile, publicKeyFile);
         SignedObject signedObject = createSignedObject(message, keys.getPrivateKey());
         Keys.saveObjectToFile(signFile, signedObject);
     }
 
-    public String CriptoVerify(String privateKeyFile, String signFile) throws IOException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        PublicKey publicKey = (PublicKey) Keys.readObjectFromFile(signFile);
+    static public String CriptoVerify(String publicKeyFile, String signFile) throws IOException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        PublicKey publicKey = (PublicKey) Keys.readObjectFromFile(publicKeyFile);
         SignedObject signedObject = (SignedObject) Keys.readObjectFromFile(signFile);
         // Проверка подписанного объекта
         if (!verifySignedObject(signedObject, publicKey)){
@@ -26,7 +22,7 @@ public class Signatures {
         return (String) signedObject.getObject();
     }
 
-    private boolean verifySignedObject(final SignedObject obj, PublicKey key)
+    static private boolean verifySignedObject(final SignedObject obj, PublicKey key)
             throws InvalidKeyException, SignatureException,
             NoSuchAlgorithmException
     {
@@ -35,7 +31,7 @@ public class Signatures {
         return obj.verify(key, signature);
     }
 
-    private SignedObject createSignedObject(final String msg, PrivateKey key)
+    static private SignedObject createSignedObject(final String msg, PrivateKey key)
             throws InvalidKeyException, SignatureException,
             IOException, NoSuchAlgorithmException
     {
@@ -46,16 +42,16 @@ public class Signatures {
     /**
      * Создать файл подписи
      * @param message сообщение для подписи
-     * @param privateKey
+     * @param
      * @param signFile путь и имя файла с подписью
      */
-    public void DigestSign(String message, PrivateKey privateKey, String signFile)
-            throws NoSuchProviderException, NoSuchAlgorithmException,
-            InvalidKeyException, SignatureException, IOException {
+    static public void DigestSign(String message, String privateKeyFile, String publicKeyFile, String signFile)
+            throws Exception {
+        Keys keys = new Keys(privateKeyFile, publicKeyFile);
     // Создание подписи
         Signature signature = Signature.getInstance("SHA1withDSA", "SUN");
     // Инициализация подписи закрытым ключом
-        signature.initSign(privateKey);
+        signature.initSign(keys.getPrivateKey());
 
     // Формирование цифровой подпись сообщения с закрытым ключом
         signature.update(message.getBytes());
@@ -71,17 +67,16 @@ public class Signatures {
     /**
      *
      * @param message подписанное сообщение
-     * @param publicKey
+     * @param
      * @param signFile путь и имя файла с подписью
      * @return
      */
-    public boolean DigestVerify(String message, PublicKey publicKey, String signFile)
-            throws NoSuchProviderException, NoSuchAlgorithmException,
-            InvalidKeyException, SignatureException, IOException {
+    static public boolean DigestVerify(String message, String publicKeyFile, String signFile)
+            throws Exception {
     // Создание подписи
         Signature signature = Signature.getInstance("SHA1withDSA", "SUN");
     // Инициализация цифровой подписи открытым ключом
-        signature.initVerify(publicKey);
+        signature.initVerify((PublicKey) Keys.readObjectFromFile(publicKeyFile));
     // Формирование цифровой подпись сообщения с открытым ключом
         signature.update(message.getBytes());
 

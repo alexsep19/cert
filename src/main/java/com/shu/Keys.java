@@ -11,6 +11,12 @@ public class Keys {
     public Keys() throws Exception{
         createKeys();
     }
+
+    public Keys(String privateKeyFile, String publicKeyFile) throws Exception{
+        this();
+        saveObjectToFile(privateKeyFile, getPrivateKey());
+        saveObjectToFile(publicKeyFile , getPublicKey());
+    }
     /**
      * Процедура генерирования закрытого и открытого ключей
      */
