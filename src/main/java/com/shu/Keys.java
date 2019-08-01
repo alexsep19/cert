@@ -24,25 +24,24 @@ public class Keys {
         publicKey  = keyPair.getPublic();
     }
 
-    public void saveKey(final String filePath, final Object key)
+    static public void saveObjectToFile(final String filePath, final Object key)
             throws FileNotFoundException, IOException
     {
         if (key != null){
-            FileOutputStream fos = new FileOutputStream(filePath);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(key);
-            oos.close();
-            fos.close();
+            try(FileOutputStream fos = new FileOutputStream(filePath);
+                ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+                oos.writeObject(key);
+            }
         }
     }
 
-    public Object readKey(final String filePath)
+    static public Object readObjectFromFile(final String filePath)
             throws FileNotFoundException, IOException, ClassNotFoundException
     {
-        FileInputStream fis = new FileInputStream(filePath);
-        ObjectInputStream ois = new ObjectInputStream(fis);
-        Object object = ois.readObject();
-        return object;
+        try(FileInputStream fis = new FileInputStream(filePath);
+        ObjectInputStream ois = new ObjectInputStream(fis);) {
+            return ois.readObject();
+        }
     }
 
     public PrivateKey getPrivateKey() {
